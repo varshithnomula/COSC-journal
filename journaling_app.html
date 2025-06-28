@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Thoughts - Journaling App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .journal-editor {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .journal-timeline {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .editor-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #4a5568;
+        }
+
+        .date-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .journal-textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            margin-bottom: 20px;
+            background: white;
+            transition: all 0.3s ease;
+            line-height: 1.6;
+        }
+
+        .journal-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .journal-textarea::placeholder {
+            color: #a0aec0;
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .save-btn:active {
+            transform: translateY(0);
+        }
+
+        .save-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .analysis-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .analysis-title {
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+
+        .mood-indicator {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .mood-positive { background: #c6f6d5; color: #22543d; }
+        .mood-neutral { background: #fed7c3; color: #c05621; }
+        .mood-negative { background: #fed7d7; color: #c53030; }
+
+        .timeline-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #4a5568;
+        }
+
+        .timeline-entry {
+            border-left: 3px solid #667eea;
+            padding-left: 20px;
+            margin-bottom: 30px;
+            position: relative;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .timeline-entry::before {
+            content: '';
+            position: absolute;
+            left: -7px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            background: #667eea;
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px white;
+        }
+
+        .entry-date {
+            font-size: 0.9rem;
+            color: #718096;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .entry-preview {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .entry-analysis {
+            background: #f7fafc;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .entry-mood {
+            margin-bottom: 8px;
+        }
+
+        .entry-summary {
+            color: #718096;
+            font-style: italic;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #a0aec0;
+            padding: 40px 20px;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .analyzing {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #cbd5e0;
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Daily Thoughts</h1>
+            <p>Capture your moments, understand your emotions</p>
+        </div>
+
+        <div class="main-content">
+            <div class="journal-editor">
+                <h2 class="editor-title">✍️ Write Your Entry</h2>
+                <input type="date" id="entryDate" class="date-input">
+                <textarea 
+                    id="journalText" 
+                    class="journal-textarea" 
+                    placeholder="What's on your mind today? Share your thoughts, feelings, experiences, or anything you'd like to remember..."
+                ></textarea>
+                <button id="saveBtn" class="save-btn">Save Entry</button>
+                
+                <div id="analysisSection" class="analysis-section" style="display: none;">
+                    <div class="analysis-title">🤖 AI Analysis</div>
+                    <div id="moodResult" class="mood-indicator"></div>
+                    <div id="summaryResult" class="entry-summary"></div>
+                </div>
+            </div>
+
+            <div class="journal-timeline">
+                <h2 class="timeline-title">📅 Your Journey</h2>
+                <div id="timelineContainer">
+                    <div class="empty-state">
+                        <div class="empty-icon">📖</div>
+                        <p>No entries yet. Start journaling to see your timeline!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class JournalingApp {
+            constructor() {
+                this.entries = [];
+                this.init();
+            }
+
+            init() {
+                // Set today's date as default
+                document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
+                
+                // Event listeners
+                document.getElementById('saveBtn').addEventListener('click', () => this.saveEntry());
+                document.getElementById('journalText').addEventListener('input', () => this.handleTextInput());
+                
+                // Load existing entries (simulated)
+                this.loadEntries();
+                this.renderTimeline();
+            }
+
+            handleTextInput() {
+                const text = document.getElementById('journalText').value;
+                const saveBtn = document.getElementById('saveBtn');
+                saveBtn.disabled = text.trim().length === 0;
+            }
+
+            async saveEntry() {
+                const date = document.getElementById('entryDate').value;
+                const text = document.getElementById('journalText').value.trim();
+                
+                if (!text) return;
+
+                const saveBtn = document.getElementById('saveBtn');
+                const originalText = saveBtn.textContent;
+                
+                // Show loading state
+                saveBtn.innerHTML = '<span class="spinner"></span>Analyzing...';
+                saveBtn.disabled = true;
+                
+                document.querySelector('.journal-editor').classList.add('analyzing');
+
+                try {
+                    // Simulate API call delay
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Analyze the entry
+                    const analysis = this.analyzeEntry(text);
+                    
+                    // Create entry object
+                    const entry = {
+                        id: Date.now(),
+                        date: date,
+                        text: text,
+                        mood: analysis.mood,
+                        summary: analysis.summary,
+                        timestamp: new Date().toISOString()
+                    };
+
+                    // Add to entries array
+                    this.entries.unshift(entry);
+                    
+                    // Show analysis
+                    this.showAnalysis(analysis);
+                    
+                    // Update timeline
+                    this.renderTimeline();
+                    
+                    // Clear form
+                    document.getElementById('journalText').value = '';
+                    
+                } catch (error) {
+                    console.error('Error saving entry:', error);
+                } finally {
+                    // Reset button
+                    saveBtn.textContent = originalText;
+                    saveBtn.disabled = false;
+                    document.querySelector('.journal-editor').classList.remove('analyzing');
+                }
+            }
+
+            analyzeEntry(text) {
+                // Simulate AI analysis with keyword-based mood detection
+                const positiveWords = ['happy', 'joy', 'excited', 'grateful', 'love', 'amazing', 'wonderful', 'great', 'fantastic', 'blessed', 'thankful', 'awesome', 'brilliant', 'perfect', 'beautiful'];
+                const negativeWords = ['sad', 'angry', 'frustrated', 'tired', 'stressed', 'worried', 'anxious', 'difficult', 'hard', 'terrible', 'awful', 'hate', 'annoyed', 'upset', 'disappointed'];
+                
+                const words = text.toLowerCase().split(/\s+/);
+                let positiveScore = 0;
+                let negativeScore = 0;
+                
+                words.forEach(word => {
+                    if (positiveWords.some(pw => word.includes(pw))) positiveScore++;
+                    if (negativeWords.some(nw => word.includes(nw))) negativeScore++;
+                });
+
+                let mood, moodClass;
+                if (positiveScore > negativeScore) {
+                    mood = '😊 Positive';
+                    moodClass = 'mood-positive';
+                } else if (negativeScore > positiveScore) {
+                    mood = '😔 Reflective';
+                    moodClass = 'mood-negative';
+                } else {
+                    mood = '😐 Neutral';
+                    moodClass = 'mood-neutral';
+                }
+
+                // Generate a simple summary
+                const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+                const summary = sentences.length > 0 ? 
+                    `Entry focuses on ${this.extractKeyThemes(text)}. ${sentences[0].trim().substring(0, 80)}${sentences[0].length > 80 ? '...' : ''}` :
+                    'Brief personal reflection.';
+
+                return { mood, moodClass, summary };
+            }
+
+            extractKeyThemes(text) {
+                const themes = ['work', 'family', 'friends', 'health', 'goals', 'relationships', 'travel', 'hobbies', 'learning', 'challenges'];
+                const foundThemes = themes.filter(theme => 
+                    text.toLowerCase().includes(theme)
+                );
+                
+                if (foundThemes.length > 0) {
+                    return foundThemes.slice(0, 2).join(' and ');
+                }
+                return 'daily experiences';
+            }
+
+            showAnalysis(analysis) {
+                const analysisSection = document.getElementById('analysisSection');
+                const moodResult = document.getElementById('moodResult');
+                const summaryResult = document.getElementById('summaryResult');
+                
+                moodResult.textContent = analysis.mood;
+                moodResult.className = `mood-indicator ${analysis.moodClass}`;
+                summaryResult.textContent = analysis.summary;
+                
+                analysisSection.style.display = 'block';
+                
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    analysisSection.style.display = 'none';
+                }, 5000);
+            }
+
+            loadEntries() {
+                // Simulate some existing entries
+                const sampleEntries = [
+                    {
+                        id: 1,
+                        date: '2025-06-27',
+                        text: 'Had an amazing day at the park with family. The weather was perfect and we had a great picnic. Feeling grateful for these moments.',
+                        mood: '😊 Positive',
+                        summary: 'Entry focuses on family and daily experiences. Had an amazing day at the park with family.',
+                        timestamp: '2025-06-27T10:30:00Z'
+                    },
+                    {
+                        id: 2,
+                        date: '2025-06-26',
+                        text: 'Work was challenging today. Had to deal with a difficult project deadline. Feeling a bit stressed but trying to stay positive.',
+                        mood: '😔 Reflective',
+                        summary: 'Entry focuses on work and challenges. Work was challenging today.',
+                        timestamp: '2025-06-26T18:45:00Z'
+                    }
+                ];
+                
+                this.entries = sampleEntries;
+            }
+
+            renderTimeline() {
+                const container = document.getElementById('timelineContainer');
+                
+                if (this.entries.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📖</div>
+                            <p>No entries yet. Start journaling to see your timeline!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = this.entries.map(entry => `
+                    <div class="timeline-entry">
+                        <div class="entry-date">${this.formatDate(entry.date)}</div>
+                        <div class="entry-preview">${this.truncateText(entry.text, 150)}</div>
+                        <div class="entry-analysis">
+                            <div class="entry-mood">
+                                <span class="mood-indicator ${this.getMoodClass(entry.mood)}">${entry.mood}</span>
+                            </div>
+                            <div class="entry-summary">${entry.summary}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+
+            truncateText(text, maxLength) {
+                if (text.length <= maxLength) return text;
+                return text.substring(0, maxLength) + '...';
+            }
+
+            getMoodClass(mood) {
+                if (mood.includes('Positive')) return 'mood-positive';
+                if (mood.includes('Reflective')) return 'mood-negative';
+                return 'mood-neutral';
+            }
+        }
+
+        // Initialize the app
+        new JournalingApp();
+    </script>
+</body>
+</html>
