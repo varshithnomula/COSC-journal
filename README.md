@@ -2,7 +2,8 @@
 
 A simple web-based journaling application that analyzes your mood and displays your entries in a timeline format.
 
-live link:
+live link: https://varshithnomula.github.io/COSC-journal/
+
 ![image](https://github.com/user-attachments/assets/366257e1-2082-4794-8282-69baf36c1690)
 
 
